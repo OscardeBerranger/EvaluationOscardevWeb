@@ -1,0 +1,18 @@
+*
+{
+    margin: 0;
+}
+nav{
+    display: flex;
+    justify-content: space-between;
+}
+nav>*{
+    margin: 40px;
+}
+.rightNavBar{
+    display: flex;
+    justify-content: space-evenly;
+}
+.rightNavBar>*{
+    margin: 10px;
+}
