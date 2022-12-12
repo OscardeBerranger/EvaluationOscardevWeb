@@ -6,6 +6,7 @@ let registerButtons = document.querySelectorAll('.register')
 const userMenuBtn = document.querySelector('.userInfo')
 const myModale = document.querySelector('.modale')
 const myModaleContent = document.querySelector('.modaleContent')
+const postBtn = document.querySelector('.postBtn')
 let closeModale = document.querySelector('.closeModale')
 let token
 let currentUser
@@ -39,13 +40,11 @@ function callListener(){
 
 document.querySelector('body').onload = callListener()
 
-userMenuBtn.addEventListener('click', ()=>{
-    if (token && currentUser){
-
-    }else alert("You must be logged in to see your information !!")
-})
 closeModale.addEventListener('click', ()=>{
         myModale.style.display = "none"
+})
+postBtn.addEventListener('click', ()=>{
+    displayPostsPage()
 })
 
 function display(content){
@@ -94,12 +93,27 @@ function getUserTemplate(userInfo){
 }
 
 function getCommTemplate(com){
-    let template = `  
+    let template
+    if (com.user.username === currentUser){
+         template = `  
+        <div class="userInfo">
+            <p class="username">Username : ${com.user.username}</p>
+            <p class="userId">comment : ${com.content}</p>
+            <button class="editComm" id="${com.id}">edit comment</button>
+            <div class="inputEditCommContainer${com.id}" id="${com.id}">
+
+            </div>
+            <button class="deleteComm" id = "${com.id}">delete comment</button>
+        </div>
+    `
+    }else {
+         template = `  
         <div class="userInfo">
             <p class="username">Username : ${com.user.username}</p>
             <p class="userId">comment : ${com.content}</p>
         </div>
     `
+    }
     return template
 }
 
@@ -115,14 +129,19 @@ function getPostTemplate(post){
         })
         if (post.user.username === currentUser){
             template = `
-            <div class="postDiv">
+            <div class="postDiv myMsg">
                 <a class="postAuthor" id="${post.user.id}">Author : ${post.user.username}</a>
                 <div class="postContent">
                     <p><strong>${post.content}</strong></p>
                 </div>
                 <div class="comment">
-                        ${comTemplate}
-                </div>
+                    ${comTemplate}
+                    <button class="commentPost" id="${post.id}">Comment</button>
+                    <div class="commentIt off" id="${post.id}">
+                           <input class="sendCommentInput" type="text" id="sendCommentInput${post.id}">
+                           <button class="sendComment" id="${post.id}"> send </button>
+                    </div>
+            </div>
                 <button class="editPostButton" id = "${post.id}">edit</button>
                 <button class="deletePostButton" id = "${post.id}">delete</button>
             </div>
@@ -133,15 +152,19 @@ function getPostTemplate(post){
         `
         }
         else {
-
             template = `
-        <div class="postDiv" >
+        <div class="postDiv notMyMsg" >
             <a class="postAuthor" id="${post.user.id}">Author : ${post.user.username}</a>
             <div class="postContent">
                 <p><strong>${post.content}</strong></p>
             </div>
             <div class="comment">
                     ${comTemplate}
+                    <button class="commentPost" id="${post.id}">Comment</button>
+                    <div class="commentIt off" id="${post.id}">
+                           <input class="sendCommentInput" type="text" id="sendCommentInput${post.id}">
+                           <button class="sendComment" id="${post.id}"> send </button>
+                    </div>
             </div>
         </div>
         `
@@ -150,12 +173,18 @@ function getPostTemplate(post){
     else {
         if (post.user.username === currentUser){
             template = `
-        <div class="postDiv">
+        <div class="postDiv myMsg">
             <a class="postAuthor" id="${post.user.id}">Author : ${post.user.username}</a>
             <div class="postContent">
                 <p><strong>${post.content}</strong></p>
             </div>
-            
+            <div class="comment">
+                    <button class="commentPost" id="${post.id}">Comment</button>
+                    <div class="commentIt off" id="${post.id}">
+                           <input class="sendCommentInput" type="text" id="sendCommentInput${post.id}">
+                           <button class="sendComment" id="${post.id}"> send </button>
+                    </div>
+            </div>
             <button class="editPostButton" id = "${post.id}">edit</button>
             <button class="deletePostButton" id = "${post.id}">delete</button>
         </div>
@@ -164,13 +193,21 @@ function getPostTemplate(post){
             <button class="editPost" id="${post.id}">Edit</button>
         </div>
         `
-        }else {
+        }
+        else {
 
             template = `
-        <div class="postDiv" >
+        <div class="postDiv notMyMsg" >
             <a class="postAuthor" id="${post.user.id}">Author : ${post.user.username}</a>
             <div class="postContent">
                 <p><strong>${post.content}</strong></p>
+            </div>
+            <div class="comment">
+                    <button class="commentPost" id="${post.id}">Comment</button>
+                    <div class="commentIt off" id="${post.id}">
+                           <input class="sendCommentInput" type="text" id="sendCommentInput${post.id}">
+                           <button class="sendComment" id="${post.id}"> send </button>
+                    </div>
             </div>
         </div>
         `
@@ -184,7 +221,7 @@ function getPostTemplate(post){
 // Tout les blogs
 function getPostsTemplate(posts){
 
-    let postsTemplate = "Posts"
+    let postsTemplate = `<h2>Post</h2>`
     let messages
 
     posts['hydra:member'].forEach(post=>{
@@ -208,6 +245,7 @@ function getPostsTemplate(posts){
 // Creation des fonctions de chargement
 function displayLoginPage(){
     let loginPage = getLoginTemplate()
+    document.querySelector('.mainPageWelcome').innerHTML = " "
     display(loginPage)
     let button = document.querySelector('#loginSubmit')
     let username = document.querySelector('#loginUsernameInput')
@@ -220,6 +258,7 @@ function displayLoginPage(){
 
 function displayRegisterPage(){
     let registerPage = getRegisterTemplate()
+    document.querySelector('.mainPageWelcome').innerHTML = " "
     display(registerPage)
     let button = document.querySelector('#registerSubmit')
     let username = document.querySelector('#registerUsernameInput')
@@ -232,9 +271,11 @@ function displayRegisterPage(){
 }
 
 async function displayPostsPage(){
+    document.querySelector('.mainPageWelcome').innerHTML = " "
     getPostsFromApi().then(posts=>{
         posts+=getPostsTemplate(posts)
         display(posts)
+
         mainContainer.scrollTo(0, document.body.scrollHeight);
         document.querySelector('#sendPost').addEventListener('click', ()=>{
             sendPost(
@@ -271,6 +312,44 @@ async function displayPostsPage(){
                 myModale.style.display = "block"
             })
         })
+
+        document.querySelectorAll('.commentPost').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                document.querySelectorAll('.commentIt').forEach(div=>{
+                    if (div.id === btn.id){
+                        div.classList.toggle("off")
+                    }
+                })
+            })
+        })
+
+        document.querySelectorAll('.sendComment').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                addComm(btn.id)
+            })
+        })
+        document.querySelectorAll('.deleteComm').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                deletComm(btn.id)
+            })
+        })
+
+        document.querySelectorAll('.editComm').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                document.querySelector(`.inputEditCommContainer${btn.id}`).innerHTML = ""
+                document.querySelector(`.inputEditCommContainer${btn.id}`).innerHTML += `
+                                  <input type="text" class ="editComm${btn.id}" id="inputEditComm${btn.id}">
+                                  <button class="editComm${btn.id}" id="sendEditComm${btn.id}">Submit</button>
+                `
+
+                document.querySelector(`#sendEditComm${btn.id}`).addEventListener('click', ()=>{
+                    editComm(btn.id)
+                })
+            })
+
+        })
+
+
     })
 }
 
@@ -289,9 +368,7 @@ function register(username, password){
     }
     fetch(url, fetchParams)
         .then(response=>response.json())
-        .then(data=>{
-            console.log(data)
-        })
+
 }
 
 function login(username, password){
@@ -336,7 +413,7 @@ async function getPostsFromApi(){
     return await fetch(url, fetchParams)
         .then(response=>response.json())
         .then(posts=>{
-            console.log(posts)
+
             return posts
         })
 }
@@ -410,5 +487,55 @@ async function loadUserInfoFromApi(id){
 }
 
 function addComm(id){
-    
+    let url = `${baseUrl}/comment/${id}`
+    let content = document.querySelector(`#sendCommentInput${id}`)
+    let body = {
+        content:content.value
+    }
+    let bodySerialise = JSON.stringify(body)
+    let fetchParams = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+
+        },
+        body: bodySerialise
+    }
+    fetch(url, fetchParams)
+        .then(displayPostsPage)
+}
+
+function deletComm(id){
+    let url = `${baseUrl}/comments/${id}`
+    let fetchParams = {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+
+        },
+    }
+    fetch(url, fetchParams)
+        .then(displayPostsPage)
+}
+
+function editComm(id){
+    let content = document.querySelector(`#inputEditComm${id}`)
+    let url = `${baseUrl}/comments/${id}`
+    let body ={
+        content:content.value
+    }
+    let bodySerialise = JSON.stringify(body)
+    let fetchParams = {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+
+        },
+        body: bodySerialise
+    }
+    fetch(url, fetchParams)
+        .then(displayPostsPage)
 }

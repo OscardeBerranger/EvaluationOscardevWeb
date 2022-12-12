@@ -1,10 +1,26 @@
 *
 {
     margin: 0;
+
+}
+.logo{
+    color: white;
+}
+button{
+    width: 80px;
+    height: 30px;
+    border-radius: 30px;
+    background-color: #26272b;
+    color: white;
+    border: none;
+    cursor: pointer;
 }
 nav{
     display: flex;
     justify-content: space-between;
+}
+body{
+    background-color: #1f1f1f;
 }
 nav>*{
     margin: 40px;
@@ -18,8 +34,8 @@ nav>*{
 }
 .postDiv{
     border: 1px solid black;
-    margin: 5px;
-    margin-bottom: 20px;
+    color: white;
+
 }
 .postContent{
     background-color: rgba(128, 128, 128, 0.45);
@@ -54,6 +70,7 @@ nav>*{
 }
 .postAuthor{
     cursor: pointer;
+    color: #818181;
 }
 .postAuthor:hover{
     text-decoration: underline;
@@ -67,5 +84,49 @@ nav>*{
     position: fixed;
     display: none;
     z-index: 2;
+    color: white;
+}
+.commentIt.off{
+    display: none;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+.myMsg{
+    margin-bottom: 40px;
+    padding: 20px;
+    margin-left: 90px;
+    margin-right: 40px;
+    border-right: 3px solid #01AD98;
+    background-color: #26272b;
+    text-align: right;
+}
+.notMyMsg{
+    margin-bottom: 40px;
+    padding: 50px;
+    margin-right: 90px;
+    margin-left: 30px;
+    border-left: 3px solid #ff8750;
+    background-color: #26272b;
+}
+
+.comment>div>*{
+    font-size: 0.9em;
+    margin: 4px;
+}
+.mainPageWelcome{
+    width: 30%;
+    height: 50vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+.mainPageWelcome>*{
+    transform: scale(1.5);
+    margin: 20px;
+}
+h2{
     color: white;
 }
