@@ -1,14 +1,24 @@
 // déclaration des variables
-let baseUrl = "https://esdexamen.tk/b1devweb/api"
-let mainContainer = document.querySelector('.mainContainer')
+const baseUrl = "https://esdexamen.tk/b1devweb/api"
+const mainContainer = document.querySelector('.mainContainer')
 let loginButtons = document.querySelectorAll('.login')
 let registerButtons = document.querySelectorAll('.register')
+const userMenuBtn = document.querySelector('.userInfo')
+const myModale = document.querySelector('.modale')
+const myModaleContent = document.querySelector('.modaleContent')
+let closeModale = document.querySelector('.closeModale')
 let token
 let currentUser
 
 
 
 // fonctions
+function addModale(content){
+    myModaleContent.innerHTML = ""
+    myModaleContent.innerHTML = `
+    ${content}
+    `
+}
 
 function callListener(){
     loginButtons = document.querySelectorAll('.login')
@@ -28,6 +38,15 @@ function callListener(){
 }
 
 document.querySelector('body').onload = callListener()
+
+userMenuBtn.addEventListener('click', ()=>{
+    if (token && currentUser){
+
+    }else alert("You must be logged in to see your information !!")
+})
+closeModale.addEventListener('click', ()=>{
+        myModale.style.display = "none"
+})
 
 function display(content){
     mainContainer.innerHTML = ""
@@ -64,33 +83,127 @@ function getRegisterTemplate(){
     return template
 }
 
+function getUserTemplate(userInfo){
+    let template = `  
+        <div class="userInfo">
+            <p class="username">Username : ${userInfo.username}</p>
+            <p class="userId">User id : ${userInfo.id}</p>
+        </div>
+    `
+    return template
+}
+
+function getCommTemplate(com){
+    let template = `  
+        <div class="userInfo">
+            <p class="username">Username : ${com.user.username}</p>
+            <p class="userId">comment : ${com.content}</p>
+        </div>
+    `
+    return template
+}
+
 // Un seul blog
 function getPostTemplate(post){
-    let template = `
-        <div class="border border-dark">
-            <p>Author : ${post.user.username}</p>
-            <div class="messageContent">
+    let template
+
+    if (post.comments.length>0){
+        let comTemplate
+        post.comments.forEach(comm=>{
+            console.log(comm)
+            comTemplate+=getCommTemplate(comm)
+        })
+        if (post.user.username === currentUser){
+            template = `
+            <div class="postDiv">
+                <a class="postAuthor" id="${post.user.id}">Author : ${post.user.username}</a>
+                <div class="postContent">
+                    <p><strong>${post.content}</strong></p>
+                </div>
+                <div class="comment">
+                        ${comTemplate}
+                </div>
+                <button class="editPostButton" id = "${post.id}">edit</button>
+                <button class="deletePostButton" id = "${post.id}">delete</button>
+            </div>
+            <div class="editPostContainer off" id="${post.id}">
+                <input type="text" id="editPost${post.id}">
+                <button class="editPost" id="${post.id}">Edit</button>
+            </div>
+        `
+        }
+        else {
+
+            template = `
+        <div class="postDiv" >
+            <a class="postAuthor" id="${post.user.id}">Author : ${post.user.username}</a>
+            <div class="postContent">
+                <p><strong>${post.content}</strong></p>
+            </div>
+            <div class="comment">
+                    ${comTemplate}
+            </div>
+        </div>
+        `
+        }
+    }
+    else {
+        if (post.user.username === currentUser){
+            template = `
+        <div class="postDiv">
+            <a class="postAuthor" id="${post.user.id}">Author : ${post.user.username}</a>
+            <div class="postContent">
+                <p><strong>${post.content}</strong></p>
+            </div>
+            
+            <button class="editPostButton" id = "${post.id}">edit</button>
+            <button class="deletePostButton" id = "${post.id}">delete</button>
+        </div>
+        <div class="editPostContainer off" id="${post.id}">
+            <input type="text" id="editPost${post.id}">
+            <button class="editPost" id="${post.id}">Edit</button>
+        </div>
+        `
+        }else {
+
+            template = `
+        <div class="postDiv" >
+            <a class="postAuthor" id="${post.user.id}">Author : ${post.user.username}</a>
+            <div class="postContent">
                 <p><strong>${post.content}</strong></p>
             </div>
         </div>
         `
+        }
+    }
+
+
     return template
 }
 
 // Tout les blogs
 function getPostsTemplate(posts){
 
-    let postsTemplate = ""
+    let postsTemplate = "Posts"
+    let messages
 
     posts['hydra:member'].forEach(post=>{
-
-        postsTemplate+=  getPostTemplate(post)
+        messages+=  getPostTemplate(post)
     })
+
+    postsTemplate +=`
+            <div class="postsContainer">
+                ${messages}
+            </div>
+            <div class="sendPost">
+                <input id = "sendPostInput" type="text">
+                <button id="sendPost">Send</button>
+            </div>
+    `
 
     return postsTemplate
 
 }
-
 
 // Creation des fonctions de chargement
 function displayLoginPage(){
@@ -121,11 +234,43 @@ async function displayPostsPage(){
     getPostsFromApi().then(posts=>{
         posts+=getPostsTemplate(posts)
         display(posts)
+        document.querySelector('#sendPost').addEventListener('click', ()=>{
+            sendPost(
+                document.querySelector('#sendPostInput')
+            )
+        })
+
+        document.querySelectorAll('.editPostButton').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                document.querySelectorAll('.editPostContainer').forEach(c=>{
+                    if (c.id === btn.id){
+                        c.classList.toggle("off")
+                    }
+                })
+            })
+        })
+
+        document.querySelectorAll('.editPost').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                editPost(btn.id)
+            })
+        })
+
+        document.querySelectorAll('.deletePostButton').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                deletePost(btn.id)
+            })
+        })
+        document.querySelectorAll('.postAuthor').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                loadUserInfoFromApi(btn.id).then(data=>{
+                     addModale(getUserTemplate(data))
+                })
+                myModale.style.display = "block"
+            })
+        })
     })
 }
-
-
-
 
 // Creation des fonctions utilisants l'api
 function register(username, password){
@@ -189,6 +334,75 @@ async function getPostsFromApi(){
     return await fetch(url, fetchParams)
         .then(response=>response.json())
         .then(posts=>{
+            console.log(posts)
             return posts
+        })
+}
+
+function sendPost(content){
+    let url = `${baseUrl}/post`
+    let body = {
+        content : content.value
+    }
+    let bodySerialise = JSON.stringify(body)
+
+    let fetchParams = {
+        method:"POST",
+        headers:{"Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body:bodySerialise
+    }
+    fetch(url, fetchParams)
+        .then(displayPostsPage())
+
+
+}
+
+function editPost(id){
+    let content = document.querySelector(`#editPost${id}`)
+    let url = `${baseUrl}/posts/${id}`
+    let body ={
+        content:content.value
+    }
+    let bodySerialise = JSON.stringify(body)
+    let fetchParams = {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+
+        },
+        body: bodySerialise
+    }
+    fetch(url, fetchParams)
+        .then(displayPostsPage)
+}
+
+function deletePost(id){
+    let url = `${baseUrl}/posts/${id}`
+    let fetchParams = {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        }
+    }
+    fetch(url, fetchParams)
+        .then(displayPostsPage)
+}
+
+async function loadUserInfoFromApi(id){
+    let url = `${baseUrl}/users/${id}`
+    let fetchParams = {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }
+    return await fetch(url, fetchParams)
+        .then(response=>response.json())
+        .then(data=>{
+            return data
         })
 }
