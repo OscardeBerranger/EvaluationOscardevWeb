@@ -226,6 +226,7 @@ function displayRegisterPage(){
     let password = document.querySelector('#registerPasswordInput')
     button.addEventListener('click', ()=>{
         register(username.value, password.value)
+        displayLoginPage()
     })
     callListener()
 }
@@ -234,6 +235,7 @@ async function displayPostsPage(){
     getPostsFromApi().then(posts=>{
         posts+=getPostsTemplate(posts)
         display(posts)
+        mainContainer.scrollTo(0, document.body.scrollHeight);
         document.querySelector('#sendPost').addEventListener('click', ()=>{
             sendPost(
                 document.querySelector('#sendPostInput')
@@ -405,4 +407,8 @@ async function loadUserInfoFromApi(id){
         .then(data=>{
             return data
         })
+}
+
+function addComm(id){
+    
 }
